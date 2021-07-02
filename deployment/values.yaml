@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: 996041048228.dkr.ecr.sa-east-1.amazonaws.com/poc-react-deployment-web-charts
+  repository: 165651324495.dkr.ecr.sa-east-1.amazonaws.com/poc-react-deployment-web-charts
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
