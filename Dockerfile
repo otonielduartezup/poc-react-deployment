@@ -1,16 +1,9 @@
-FROM node:12-alpine as base
+FROM node:12-alpine as build
 WORKDIR /app/
 COPY package*.json /app/
-
-FROM base as dependencies
-ENV NODE_ENV=development
-WORKDIR /app/
-RUN npm install --production
-
-FROM dependencies as build
-WORKDIR /app/
-COPY . .
 ENV NODE_ENV=production
+RUN npm install --production
+COPY . .
 RUN npm run build
 
 #FROM node:12-alpine
@@ -21,9 +14,7 @@ RUN npm run build
 #EXPOSE 9000
 #CMD ["node", "server.js"]
 
-FROM nginx:1.17.8-alpine
+FROM nginx:1.20.1-alpine
 COPY --from=build /app/build /usr/share/nginx/html
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx/nginx.conf /etc/nginx/conf.d
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
