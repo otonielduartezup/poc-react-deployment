@@ -1,0 +1,173 @@
+# Default values for kotlin-base.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: 165651324495.dkr.ecr.sa-east-1.amazonaws.com/poc-react-deployment-web-charts
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+containerPort: 80
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+configMap:
+  # Specifies whether a config map should be created
+  create: true
+  # Annotations to add to the config map
+  annotations: {}
+  # The name of the config map to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  data: {}
+
+secret:
+  # Specifies whether a secret should be created
+  create: true
+  # Annotations to add to the secret
+  annotations: {}
+  # The name of the secret to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+  data: {}
+
+podAnnotations: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: react-charts.dev.iupp.io
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: react-charts.dev.iupp.io
+            servicePort: 80
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+probes:
+  # This section must content all probes configurations
+  # To disable probes configuration set probe value empty
+  # Example:
+  #  livenessProbe: {}
+  #  readinessProbe: {}
+  #  startupProbe: {}
+  # For probe configuration reference see: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 1
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 3
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 1
+  startupProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 3
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 1
+
+canary:
+  enabled: false
+  # the maximum time in seconds for the canary deployment
+  # to make progress before it is rollback (default 600s)
+  progressDeadlineSeconds: 60
+  gateways: []
+  # Istio traffic policy (optional)
+  trafficPolicy:
+    mode: DISABLE # use ISTIO_MUTUAL when mTLS is enabled
+  retries: {}
+    # attempts: 3
+    # perTryTimeout: 1s
+  # retryOn: "gateway-error,connect-failure,refused-stream"
+  analysis:
+    # schedule interval (default 60s)
+    interval: 1m
+    # max number of failed metric checks before rollback
+    threshold: 5
+    # max traffic percentage routed to canary percentage (0-100)
+    maxWeight: 50
+    # canary increment step percentage (0-100)
+    stepWeight: 10
+    # See https://docs.flagger.app/usage/metrics
+    metrics:
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
+        interval: 1m
+      - name: request-duration
+        thresholdRange:
+          max: 500
+        interval: 30s
+    # Use webhooks for automated tests
+    # See https://docs.flagger.app/usage/webhooks
+    webhooks: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
